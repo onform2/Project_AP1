@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Self Exhibition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #app {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Room container */
+        .room {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        .room.active {
+            display: block;
+        }
+        
+        /* Navigation */
+        #nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        #nav button {
+            padding: 10px 20px;
+            background: #111;
+            border: 1px solid #333;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #nav button:hover {
+            border-color: #666;
+            color: #999;
+        }
+        #nav button.active {
+            border-color: #fff;
+            color: #fff;
+            background: #222;
+        }
+        
+        /* Status */
+        #status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 12px;
+            color: #444;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav id="nav">
+            <button data-room="1">Room 1: Identity</button>
+            <button data-room="2" class="active">Room 2: Cache</button>
+            <button data-room="3">Room 3: Mirror</button>
+            <button data-room="4">Room 4: Sediment</button>
+        </nav>
+        
+        <div id="room1" class="room">
+            <!-- Room 1: Identity Codification -->
+        </div>
+        
+        <div id="room2" class="room active">
+            <!-- Room 2: The Cache -->
+        </div>
+        
+        <div id="room3" class="room">
+            <!-- Room 3: The Algorithmic Mirror -->
+        </div>
+        
+        <div id="room4" class="room">
+            <!-- Room 4: The Sediment -->
+        </div>
+        
+        <div id="status"></div>
+    </div>
+    
+    <!-- Shared libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    
+    <!-- Room manager (must load before room scripts) -->
+    <script>
+        // Room management
+        const rooms = {
+            current: 2,
+            instances: {},
+            
+            switch(roomNum) {
+                // Deactivate current
+                if (this.instances[this.current] && this.instances[this.current].deactivate) {
+                    this.instances[this.current].deactivate();
+                }
+                
+                // Update UI
+                document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+                document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
+                
+                document.getElementById(`room${roomNum}`).classList.add('active');
+                document.querySelector(`#nav button[data-room="${roomNum}"]`).classList.add('active');
+                
+                this.current = roomNum;
+                
+                // Activate new room
+                if (this.instances[roomNum] && this.instances[roomNum].activate) {
+                    this.instances[roomNum].activate();
+                }
+            },
+            
+            register(roomNum, instance) {
+                this.instances[roomNum] = instance;
+            },
+            
+            setStatus(text) {
+                document.getElementById('status').textContent = text;
+            }
+        };
+    </script>
+    
+    <!-- Room scripts -->
+    <script src="js/room1.js"></script>
+    <script src="js/room2.js"></script>
+    <script src="js/room3.js"></script>
+    <script src="js/room4.js"></script>
+    
+    <!-- Initialize -->
+    <script>
+        // Navigation
+        document.querySelectorAll('#nav button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                rooms.switch(parseInt(btn.dataset.room));
+            });
+        });
+        
+        // Initialize active room
+        window.addEventListener('load', () => {
+            if (rooms.instances[rooms.current] && rooms.instances[rooms.current].activate) {
+                rooms.instances[rooms.current].activate();
+            }
+        });
+    </script>
+</body>
+</html>
